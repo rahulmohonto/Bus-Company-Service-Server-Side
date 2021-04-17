@@ -32,7 +32,10 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     const serviceCollection = client.db("full-stack-assignment-database").collection("services");
     const reviewCollection = client.db("full-stack-assignment-database").collection("reviews");
+    const orderCollection = client.db("full-stack-assignment-database").collection("orders");
+
     console.log("database connected successfully");
+
 
     app.post('/addServices', (req, res) => {
         const newService = req.body;
@@ -66,6 +69,81 @@ client.connect(err => {
                 res.send(documents)
             })
     })
+
+    app.post('/orders', (req, res) => {
+        const newOrder = req.body;
+        orderCollection.insertOne(newOrder)
+            .then(result => {
+                res.send(result.insertedCount > 0)
+                console.log(result.insertedCount)
+            })
+        console.log(newOrder)
+    })
+
+
+    app.get('/allOrders/:id', (req, res) => {
+        orderCollection.find({})
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
+    })
+
+    app.get('/orderById/:id', (req, res) => {
+        orderCollection.find({})
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
+    })
+
+
+    app.get('/showOrders', (req, res) => {
+        const bearer = req.headers.authorization;
+        if (bearer && bearer.startsWith('Bearer ')) {
+            const idToken = bearer.split(' ')[1];
+            // console.log({ idToken })
+            admin
+                .auth()
+                .verifyIdToken(idToken)
+                .then((decodedToken) => {
+                    const tokenEmail = decodedToken.email;
+                    const queryEmail = req.query.email;
+                    if (tokenEmail == queryEmail) {
+                        orderCollection.find({ email: queryEmail })
+                            .toArray((err, documents) => {
+                                res.status(200).send(documents)
+                                console.log(err)
+                            })
+                    }
+                    // else {
+                    //     res.status(401).send('Un-authorized Access')
+                    // }
+                    console.log({ tokenEmail })
+                })
+                .catch((error) => {
+                    console.log(error)
+                    res.status(401).send('Un-authorized Access')
+                });
+        }
+        else {
+            res.status(401).send('Un-authorized Access')
+        }
+
+    })
+
+
+    app.delete('/deleteService/:id', (req, res) => {
+        const id = objectId(req.params.id);
+        console.log('delete this product', id)
+        serviceCollection.findOneAndDelete({ _id: id })
+            .then(result => {
+                res.send(result.deletedCount > 0)
+                console.log(result)
+            })
+            .catch(err => console.error(`Failed to find and delete document: ${err}`))
+
+    })
+
+
 
 })
 
