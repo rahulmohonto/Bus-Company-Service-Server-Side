@@ -33,6 +33,7 @@ client.connect(err => {
     const serviceCollection = client.db("full-stack-assignment-database").collection("services");
     const reviewCollection = client.db("full-stack-assignment-database").collection("reviews");
     const orderCollection = client.db("full-stack-assignment-database").collection("orders");
+    const adminCollection = client.db("full-stack-assignment-database").collection("admins");
 
     console.log("database connected successfully");
 
@@ -80,6 +81,17 @@ client.connect(err => {
         console.log(newOrder)
     })
 
+    app.post('/addAdmin', (req, res) => {
+        const newAdmin = req.body;
+        console.log(newAdmin)
+        adminCollection.insertOne(newAdmin)
+            .then(result => {
+                res.send(result.insertedCount > 0)
+                console.log(result.insertedCount)
+            })
+        console.log(newOrder)
+
+    })
 
     app.get('/allOrders', (req, res) => {
         orderCollection.find({})
@@ -88,10 +100,10 @@ client.connect(err => {
             })
     })
 
-    app.get('/orderById/:id', (req, res) => {
-        orderCollection.find({})
+    app.post('/orderById', (req, res) => {
+        orderCollection.find({ _id: _id })
             .toArray((err, documents) => {
-                res.send(documents)
+                res.send(documents[0])
             })
     })
 
