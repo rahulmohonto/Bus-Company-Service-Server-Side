@@ -82,15 +82,24 @@ client.connect(err => {
     })
 
     app.post('/addAdmin', (req, res) => {
-        const newAdmin = req.body;
-        console.log(newAdmin)
-        adminCollection.insertOne(newAdmin)
+        const adminData = req.body;
+        console.log(adminData)
+        adminCollection.insertOne(adminData)
             .then(result => {
                 res.send(result.insertedCount > 0)
                 console.log(result.insertedCount)
+            })(err => {
+                console.log(err)
             })
-        console.log(newOrder)
 
+
+    })
+
+    app.get('/showAdmins', (req, res) => {
+        adminCollection.find({})
+            .toArray((err, documents) => {
+                res.send(documents)
+            })
     })
 
     app.get('/allOrders', (req, res) => {
